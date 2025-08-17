@@ -1,30 +1,120 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Block Blast Solver</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Block Blast Drag & Drop</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    h1 { color: #4CAF50; }
-    #board { display: grid; grid-template-columns: repeat(10, 30px); gap: 2px; margin: 20px auto; }
-    .cell { width: 30px; height: 30px; border: 1px solid #ccc; }
-    .filled { background: #4CAF50; }
+    body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
+    h1 { margin: 10px; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      grid-template-rows: repeat(10, 30px);
+      gap: 2px;
+      justify-content: center;
+      margin: 20px auto;
+      background: #ccc;
+      padding: 5px;
+    }
+    .cell {
+      width: 30px; height: 30px;
+      background: white; border: 1px solid #aaa;
+    }
+    .cell.filled { background: #4caf50; }
+    .blocks { margin: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .block {
+      display: grid; gap: 2px; background: #eee; padding: 5px;
+      cursor: grab; border: 1px solid #aaa;
+    }
+    .block div {
+      width: 30px; height: 30px;
+      background: #2196f3;
+    }
+    button { padding: 10px 15px; margin: 15px; }
   </style>
 </head>
 <body>
-  <h1>Block Blast Solver</h1>
-  <p>Bảng 10x10 (chạm vào ô để bật/tắt):</p>
-  <div id="board"></div>
+  <h1>Block Blast Demo</h1>
+  <div class="board" id="board"></div>
+
+  <h3>Blocks</h3>
+  <div class="blocks" id="blocks"></div>
+
+  <button onclick="resetBoard()">Reset</button>
+
   <script>
     const board = document.getElementById("board");
-    for (let i=0; i<100; i++) {
+    const size = 10;
+    const cells = [];
+
+    // Tạo bảng 10x10
+    for (let i = 0; i < size*size; i++) {
       const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.addEventListener("click", () => {
-        cell.classList.toggle("filled");
-      });
+      cell.className = "cell";
+      cell.dataset.index = i;
       board.appendChild(cell);
+      cells.push(cell);
+    }
+
+    // Danh sách các block mẫu (1: có ô, 0: trống)
+    const blockShapes = [
+      { shape: ["1"], cols: 1 },
+      { shape: ["11"], cols: 2 },
+      { shape: ["111"], cols: 3 },
+      { shape: ["1111"], cols: 4 },
+      { shape: ["11","11"], cols: 2 }, // vuông 2x2
+      { shape: ["10","10","11"], cols: 2 }, // L
+      { shape: ["111","010"], cols: 3 },    // T
+      { shape: ["100","111"], cols: 3 },    // L ngược
+      { shape: ["01","11","10"], cols: 2 }  // Z
+    ];
+
+    // Hiển thị block ra màn hình
+    const blocksDiv = document.getElementById("blocks");
+    blockShapes.forEach(b => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.style.gridTemplateColumns = `repeat(${b.cols}, 30px)`;
+      block.dataset.shape = b.shape.join(",");
+      b.shape.forEach(row => {
+        [...row].forEach(val => {
+          const cell = document.createElement("div");
+          if (val === "0") cell.style.visibility = "hidden";
+          block.appendChild(cell);
+        });
+      });
+      block.draggable = true;
+      blocksDiv.appendChild(block);
+    });
+
+    // Kéo thả block
+    let draggedShape = null;
+    document.querySelectorAll(".block").forEach(block => {
+      block.addEventListener("dragstart", e => {
+        draggedShape = block.dataset.shape.split(",");
+      });
+    });
+
+    board.addEventListener("dragover", e => e.preventDefault());
+    board.addEventListener("drop", e => {
+      const rect = board.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / 32);
+      const y = Math.floor((e.clientY - rect.top) / 32);
+
+      draggedShape.forEach((row, dy) => {
+        [...row].forEach((val, dx) => {
+          if (val === "1") {
+            const idx = (y+dy)*size + (x+dx);
+            if (cells[idx]) cells[idx].classList.add("filled");
+          }
+        });
+      });
+    });
+
+    function resetBoard() {
+      cells.forEach(c => c.classList.remove("filled"));
     }
   </script>
 </body>
-</html>
+  </html>
