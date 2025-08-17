@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Block Blast Solver</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    h1 { color: #4CAF50; }
+    #board { display: grid; grid-template-columns: repeat(10, 30px); gap: 2px; margin: 20px auto; }
+    .cell { width: 30px; height: 30px; border: 1px solid #ccc; }
+    .filled { background: #4CAF50; }
+  </style>
+</head>
+<body>
+  <h1>Block Blast Solver</h1>
+  <p>Bảng 10x10 (chạm vào ô để bật/tắt):</p>
+  <div id="board"></div>
+  <script>
+    const board = document.getElementById("board");
+    for (let i=0; i<100; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.addEventListener("click", () => {
+        cell.classList.toggle("filled");
+      });
+      board.appendChild(cell);
+    }
+  </script>
+</body>
+</html>
